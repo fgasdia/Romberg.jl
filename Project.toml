@@ -3,6 +3,10 @@ uuid = "ff01fdde-158c-414c-948f-c94b4a236685"
 authors = ["Forrest Gasdia"]
 version = "0.1.0"
 
+[deps]
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Trapz = "592b5752-818d-11e9-1e9a-2b8ca4a44cd1"
+
 [compat]
 julia = "1"
 
