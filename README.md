@@ -106,9 +106,7 @@ computational cost_ over trapezoidal integration.
 
 Here are some examples:
 
-###
-
-<p align="center"><img src="/tex/bc7e8af11561e520460810c128417ea8.svg?invert_in_darkmode&sanitize=true" align=middle width=121.86696059999998pt height=38.242408049999995pt/></p>
+![\displaystyle \int_0^\pi \sin(x) \,\mathrm{d}x = 2](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(x)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%202)
 
 ```jl
 using BenchmarkTools
@@ -131,7 +129,7 @@ julia> exact_answer - rans
 ```
 
 ```jl
-julia> b = @benchmarkable trapz(<img src="/tex/db413d26a2e0e9608ff4980da96a053f.svg?invert_in_darkmode&sanitize=true" align=middle width=13.96121264999999pt height=14.15524440000002pt/>y);
+julia> b = @benchmarkable trapz($x, $y);
 
 julia> run(b)
 BenchmarkTools.Trial:
@@ -148,7 +146,7 @@ BenchmarkTools.Trial:
 ```
 
 ```jl
-julia> b = @benchmarkable romberg(<img src="/tex/db413d26a2e0e9608ff4980da96a053f.svg?invert_in_darkmode&sanitize=true" align=middle width=13.96121264999999pt height=14.15524440000002pt/>y);
+julia> b = @benchmarkable romberg($x, $y);
 BenchmarkTools.Trial:
   memory estimate:  1.38 KiB
   allocs estimate:  16
@@ -164,7 +162,48 @@ BenchmarkTools.Trial:
 
 ```jl
 R = zeros(7, 7);
-b = @benchmarkable romberg!(r, <img src="/tex/db413d26a2e0e9608ff4980da96a053f.svg?invert_in_darkmode&sanitize=true" align=middle width=13.96121264999999pt height=14.15524440000002pt/>y) setup=(r=copy(<img src="/tex/166ee59279255a5a0a3f456cf2a1df13.svg?invert_in_darkmode&sanitize=true" align=middle width=700.7312251499999pt height=203.6529759pt/><img src="/tex/2260d4577cdbb05f0161be1ac778faa6.svg?invert_in_darkmode&sanitize=true" align=middle width=110.25105794999999pt height=33.187449900000026pt/><img src="/tex/bd97ff8be589d3aab9a2af6b7f5b3808.svg?invert_in_darkmode&sanitize=true" align=middle width=700.2746222999999pt height=236.7123297pt/><img src="/tex/5b8876bf3b39873c7c21812baaeb73aa.svg?invert_in_darkmode&sanitize=true" align=middle width=224.26618335pt height=28.26507089999998pt/>$
+b = @benchmarkable romberg!(r, $x, $y) setup=(r=copy($R))
+
+julia> run(b)
+BenchmarkTools.Trial:
+  memory estimate:  1.09 KiB
+  allocs estimate:  14
+  --------------
+  minimum time:     1.955 μs (0.00% GC)
+  median time:      2.234 μs (0.00% GC)
+  mean time:        2.305 μs (0.00% GC)
+  maximum time:     39.381 μs (0.00% GC)
+  --------------
+  samples:          10000
+  evals/sample:     1
+```
+
+So `romberg` is ~2× slower than `trapz`, but nearly at machine precision accuracy,
+~10 digits more accurate than `trapz`.
+
+![\displaystyle \int_0^1 x^3 \,\mathrm{d}x = 0.25](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E1%20x%5E3%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%200.25)
+
+```jl
+x = range(0, 1, length=2^4+1)
+y = x.^3
+exact_answer = 0.25
+
+tans = trapz(x, y)
+rans = romberg(x, y)
+```
+
+```jl
+julia> exact_answer - tans
+-0.0009765625
+
+julia> exact_answer - rans
+0.0
+```
+
+`romberg` was able to obtain the exact answer, compared to ~3 digits of accuracy
+for `trapz`, at the cost of ~1.7× the run time.
+
+![\displaystyle \int_0^\pi \sin(mx)\cos(nx) \,\mathrm{d}x = \frac{2m}{m^2 - n^2}](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(mx)%5Ccos(nx)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%20%5Cfrac%7B2m%7D%7Bm%5E2%20-%20n%5E2%7D)
 
 ```jl
 m = 3
