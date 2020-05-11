@@ -31,6 +31,7 @@ An additional requirement is that `length(x) == 2ⁿ + 1` for any positive integ
 
 ```jldoctest
 julia> x = range(0, π, length=2^8+1);
+
 julia> romberg(x, sin.(x))
 1.9999999999999996
 ```
@@ -67,6 +68,7 @@ lower error in the integration. The largest `max_steps` can be is
 
 ```jldoctest
 julia> x = range(0, π, length=2^8+1);
+
 julia> romberg(x, sin.(x), 8)
 1.9999999999999996
 ```
@@ -108,7 +110,9 @@ This function is useful to see how the Romberg integration progressed.
 
 ```jldoctest
 julia> x = range(0, π, length=2^8+1);
+
 julia> R = zeros(4, 4);
+
 julia> romberg!(R, x, sin.(x))
 4×4 Array{Float64,2}:
  1.92367e-16  0.0      0.0      0.0
