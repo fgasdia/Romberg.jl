@@ -106,6 +106,8 @@ computational cost_ over trapezoidal integration.
 
 Here are some examples:
 
+###
+
 <p align="center"><img src="/tex/bc7e8af11561e520460810c128417ea8.svg?invert_in_darkmode&sanitize=true" align=middle width=121.86696059999998pt height=38.242408049999995pt/></p>
 
 ```jl
@@ -162,7 +164,7 @@ BenchmarkTools.Trial:
 
 ```jl
 R = zeros(7, 7);
-b = @benchmarkable romberg!(r, <img src="/tex/db413d26a2e0e9608ff4980da96a053f.svg?invert_in_darkmode&sanitize=true" align=middle width=13.96121264999999pt height=14.15524440000002pt/>y) setup=(r=copy(<img src="/tex/055334325c1dc16b45893849c9ad163d.svg?invert_in_darkmode&sanitize=true" align=middle width=700.7312251499999pt height=203.6529759pt/><img src="/tex/2260d4577cdbb05f0161be1ac778faa6.svg?invert_in_darkmode&sanitize=true" align=middle width=110.25105794999999pt height=33.187449900000026pt/><img src="/tex/11fb91139daaab5729827cd894ae1587.svg?invert_in_darkmode&sanitize=true" align=middle width=700.2746222999999pt height=236.7123297pt/><img src="/tex/5b8876bf3b39873c7c21812baaeb73aa.svg?invert_in_darkmode&sanitize=true" align=middle width=224.26618335pt height=28.26507089999998pt/>$
+b = @benchmarkable romberg!(r, <img src="/tex/db413d26a2e0e9608ff4980da96a053f.svg?invert_in_darkmode&sanitize=true" align=middle width=13.96121264999999pt height=14.15524440000002pt/>y) setup=(r=copy(<img src="/tex/166ee59279255a5a0a3f456cf2a1df13.svg?invert_in_darkmode&sanitize=true" align=middle width=700.7312251499999pt height=203.6529759pt/><img src="/tex/2260d4577cdbb05f0161be1ac778faa6.svg?invert_in_darkmode&sanitize=true" align=middle width=110.25105794999999pt height=33.187449900000026pt/><img src="/tex/bd97ff8be589d3aab9a2af6b7f5b3808.svg?invert_in_darkmode&sanitize=true" align=middle width=700.2746222999999pt height=236.7123297pt/><img src="/tex/5b8876bf3b39873c7c21812baaeb73aa.svg?invert_in_darkmode&sanitize=true" align=middle width=224.26618335pt height=28.26507089999998pt/>$
 
 ```jl
 m = 3
