@@ -106,7 +106,7 @@ computational cost_ over trapezoidal integration.
 
 Here are some examples:
 
-###
+### 1)
 
 $$\int_0^\pi \sin(x) \,\mathrm{d}x = 2$$
 
@@ -183,7 +183,7 @@ BenchmarkTools.Trial:
 So `romberg` is ~2× slower than `trapz`, but nearly at machine precision accuracy,
 ~10 digits more accurate than `trapz`.
 
-###
+### 2)
 
 $$\int_0^1 x^3 \,\mathrm{d}x = 0.25$$
 
@@ -207,7 +207,7 @@ julia> exact_answer - rans
 `romberg` was able to obtain the exact answer, compared to ~3 digits of accuracy
 for `trapz`, at the cost of ~1.7× the run time.
 
-###
+### 3)
 
 $$\int_0^\pi \sin(mx)\cos(nx) \,\mathrm{d}x = \frac{2m}{m^2 - n^2}$$
 
