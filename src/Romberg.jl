@@ -26,19 +26,28 @@ Romberg integration requires equally spaced points. This is enforced by
 requiring `x` to be an `AbstractRange`, rather than a dense vector.
 An additional requirement is that `length(x) == 2ⁿ + 1` for any positive integer
 `n`.
+
+# Examples
+
+```jldoctest
+julia> x = range(0, π, length=2^8+1);
+julia> romberg(x, sin.(x))
+1.9999999999999996
+```
 """
 function romberg(x::AbstractRange, y::AbstractVector)
     N = length(x)
 
     @boundscheck begin
-        @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
-        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+        ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
+        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
         # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
     end
 
     # Automatically select max_steps
     max_steps = maxsteps(N)
+    @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(prevpow(2, length(x)))`"
 
     return integrate(x, y, max_steps)
 end
@@ -63,19 +72,19 @@ julia> romberg(x, sin.(x), 8)
 ```
 
 ```jldoctest
-julia> romberg(x, sin.(x), 8)
-ERROR: AssertionError: `max_steps` cannot exceed `log2(prevpow(2, length(x)))`
+julia> romberg(x, sin.(x), 9)
+ERROR: DomainError with 9:
+`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = 8
 [...]
 ```
 """
 function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
-    # If this function is called with `@inbounds`, these assertions will be skipped
     N = length(x)
 
     @boundscheck begin
-        @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(prevpow(2, length(x)))`"
-        @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
-        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+        max_steps <= log2(prevpow(2, N)) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(Int(log2(prevpow(2, length(x)))))"))
+        ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
+        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
         # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
     end
@@ -113,9 +122,9 @@ function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
 
     @boundscheck begin
         # Assume `size(R, 1)` is L (`max_steps + 1`)
-        @assert size(R,1) <= log2(prevpow(2, N))
-        @assert isequal(size(R)...) "`R` must be square"
-        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+        size(R,1) <= log2(prevpow(2, N)) || throw(DomainError(size(R,1), "dimenensions of `R` cannot be greater than `log2(prevpow(2, length(x)))`"))
+        isequal(size(R)...) || throw(DimensionMismatch("`R` must be square"))
+        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
         # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
     end

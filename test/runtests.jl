@@ -8,7 +8,7 @@ using Trapz
     y = sin.(x)
 
     @test romberg(x, y) == romberg(x, y, 8)
-    @test_throws AssertionError romberg(x, y, 9)
+    @test_throws DomainError romberg(x, y, 9)
 
     max_steps = 7
     R = zeros(max_steps+1, max_steps+1)
@@ -16,7 +16,7 @@ using Trapz
 
     x = range(0, π, length=2^8)
     y = sin.(x)
-    @test_throws AssertionError romberg(x, y)
+    @test_throws DomainError romberg(x, y)
 
 
     # Integrate different functions
