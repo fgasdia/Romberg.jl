@@ -35,7 +35,7 @@ possible given the length of `x`.
 
 If lower accuracy is acceptable or shorter compute time required, the number of
 extrapolation steps can be specified as an additional argument, up to
-`log2(nextpow(2, length(x)))`:
+`log2(prevpow(2, length(x)))`:
 ```jl
 romberg(x, y, 6)
 ```
@@ -150,7 +150,7 @@ BenchmarkTools.Trial:
 ```jl
 b = @benchmarkable romberg($x, $y);
 
-julia> run(b) 
+julia> run(b)
 BenchmarkTools.Trial:
   memory estimate:  1.38 KiB
   allocs estimate:  16
