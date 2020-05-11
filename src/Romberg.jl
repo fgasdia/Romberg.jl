@@ -1,42 +1,96 @@
 module Romberg
 
-using StaticArrays
 using Trapz
 
-function romberg(vx, vy, max_steps)
-     integrate()
-end
+export romberg, romberg!
 
+maxsteps(N) = trunc(Int, log2(prevpow(2, N)))
 
-function integrate(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
+function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
+    # If this function is called with `@inbounds`, these assertions will be skipped
     N = length(x)
 
-    # `max_steps` are extrapolation steps, size of `R` is `max_steps + 1`
-    L = max_steps + 1
-
-    # If this function is called with `@inbounds`, these assertions will be skipped
     @boundscheck begin
-        @assert max_steps <= log2(nextpow(2, N)) "`max_steps` cannot exceed `log2(nextpow(2, length(x)))`"
-        @assert max_steps <= log2(prevpow(2, typemax(max_steps))) "`max_steps` cannot exceed `log2(prevpow(2, typemax(max_steps)))`"
-
+        @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(nextpow(2, length(x)))-1`"
         @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
         @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
 
         # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
     end
 
+    return integrate(x, y, max_steps)
+end
+
+function romberg(x::AbstractRange, y::AbstractVector)
+    N = length(x)
+
+    @boundscheck begin
+        @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
+        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+
+        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
+    end
+
+    # Automatically select max_steps
+    max_steps = maxsteps(N)
+
+    return integrate(x, y, max_steps)
+end
+
+"""
+R = zeros(L,L)
+"""
+function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
+    N = length(x)
+
+    @boundscheck begin
+        # Assume `size(R, 1)` is L (`max_steps + 1`)
+        @assert size(R,1) <= log2(prevpow(2, N))
+        @assert isequal(size(R)...) "`R` must be square"
+        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+
+        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
+    end
+
+    integrate!(R, x, y)
+end
+
+@inline function integrate(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
+    # `max_steps` are extrapolation steps, size of `R` is `max_steps + 1`
+    L = max_steps + 1
+
     # `Rp` is "Rprevious", `Rc` is "Rcurrent"
     Rp = Array{promote_type(Tx,Ty)}(undef, L)
     Rc = similar(Rp)
 
-    # `trapz` integration for `L` divisions of `x`
-    @inbounds for i = 1:L
-        # `div` is safe because we assert ispow2
+    trapezoid!(Rp, x, y)
+    extrapolate!(Rp, Rc)
+
+    # best estimate
+    return Rc[end]
+end
+
+@inline function integrate!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
+    N = length(x)
+    L = size(R, 1)
+
+    trapezoid!(view(R,:,1), x, y)
+    extrapolate!(R)
+
+    return R
+end
+
+@inline function trapezoid!(R, x, y)
+    N = length(x)
+    @inbounds for i in eachindex(R)
         idxs = 1:div(N-1, 2^(i-1)):N
 
-        Rp[i] = trapz(x[idxs], view(y,idxs))
+        R[i] = trapz(x[idxs], view(y,idxs))
     end
+end
 
+@inline function extrapolate!(Rp, Rc)
+    L = length(Rp)
     @inbounds for j = 2:L
         # Precompute reused values
         pow_prev = 4^(j-1)
@@ -51,52 +105,20 @@ function integrate(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integ
             copyto!(Rp, j, Rc, j, L-j+1)
         end
     end
-
-    # best estimate
-    return Rc[end]
 end
 
-
-@inline function integratea(x::AbstractRange, y::AbstractVector, max_steps::Integer)
-    # http://www.sci.utah.edu/~beiwang/teaching/cs6210-fall-2016/lecture24.pdf
-    # see also: http://www.sci.utah.edu/~beiwang/teaching/cs6210-fall-2016/lecture23.pdf
-
-    N = length(x)
-    L = max_steps + 1
-
-    R = zeros(L,L)
-    for i = 1:L
-        # `div` is safe because we assert ispow2
-        idxs = 1:div(N-1, 2^(i-1)):N
-
-        R[i,1] = trapz(x[idxs], view(y, idxs))
-    end
-
-    for j = 2:L
+@inline function extrapolate!(R)
+    L = size(R,1)
+    @inbounds for j = 2:L
         # Precompute reused values
-        jm1 = j - 1
-        pow4_jm1 = 4^jm1
-        den = 1/(pow4_jm1 - 1)
+        pow_prev = 4^(j-1)
+        den = inv(pow_prev - 1)
 
-        for i = j:L
-            R[i,j] = (pow4_jm1*R[i,jm1] - R[i-1,jm1]) * den
+        @inbounds for i = j:L
+            R[i,j] = (pow_prev*R[i,j-1] - R[i-1,j-1]) * den
         end
     end
-
-    return LowerTriangular(R)
 end
-
-function integrate(x::AbstractRange, y)
-    # Automatically select max_steps
-    max_steps = log2(nextpow(2, vxlength)) - 1
-    return integrate(vx, vy, max_steps)
-end
-
-# TODO: allow mutable R argument, which then determines max_steps
-function integrate!(R, vx, vy)
-
-end
-
 
 function error_test(R, max_steps)
     # See http://www.sci.utah.edu/~beiwang/teaching/cs6210-fall-2016/lecture24.pdf
