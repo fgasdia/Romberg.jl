@@ -17,14 +17,14 @@ to applying pure trapezoidal integration with [Trapz.jl](https://github.com/fran
 
 First, install with
 
-```
+```jl
 ]add https://github.com/fgasdia/Romberg.jl
 ```
 
 Then, the interface is generally similar to `trapz`, except the primary function
 to call is `romberg`.
 
-```
+```jl
 x = range(0, pi, length=2^8+1)
 y = sin.(x)
 
@@ -36,9 +36,8 @@ possible given the length of `x`.
 
 If lower accuracy is acceptable or shorter compute time required, the number of
 extrapolation steps can be specified as an additional argument, up to
-`log2(nextpow(2, length(x)))`
-
-```
+`log2(nextpow(2, length(x)))`:
+```jl
 romberg(x, y, 6)
 ```
 
@@ -48,14 +47,12 @@ convergence of the integration. The size of the mutable square matrix argument
 `R` determines the number of extrapolation steps. If `size(R)` is `L×L`, then
 `L - 1` steps are taken.
 
-```
+```jl
 R = zeros(6, 6)
 romberg!(R, x, y)
 ```
-
 gives the output
-
-```
+```jl
 6×6 Array{Float64,2}:
  1.92367e-16  0.0      0.0      0.0      0.0  0.0
  1.5708       2.0944   0.0      0.0      0.0  0.0
@@ -67,8 +64,7 @@ gives the output
 
 The best estimate is the lower right corner of the matrix, accessible through
 linear indexing as
-
-```
+```jl
 julia> R[end]
 2.0000000000013207
 ```
@@ -101,7 +97,6 @@ cause a significant discontinuity and affect the accuracy of the result.
 Currently `Romberg` only allows integration over a single dimension, so
 `y::AbstractVector`.
 
-
 ## Comparison to `trapz`
 
 Given the limitations of `Romberg`, why use it over `Trapz`? For discrete
@@ -113,7 +108,7 @@ Here are some examples:
 
 **sin(x)**
 
-```
+```jl
 using BenchmarkTools
 using Trapz
 
@@ -125,7 +120,7 @@ tans = trapz(x, y)
 rans = romberg(x, y)
 ```
 
-```
+```jl
 julia> exact_answer - tans
 0.0004016113599627502
 
@@ -133,7 +128,7 @@ julia> exact_answer - rans
 1.3322676295501878e-15
 ```
 
-```
+```jl
 julia> b = @benchmarkable trapz($x, $y);
 
 julia> run(b)
@@ -150,7 +145,7 @@ BenchmarkTools.Trial:
   evals/sample:     1
 ```
 
-```
+```jl
 julia> b = @benchmarkable romberg($x, $y);
 BenchmarkTools.Trial:
   memory estimate:  1.38 KiB
@@ -165,7 +160,7 @@ BenchmarkTools.Trial:
   evals/sample:     1
 ```
 
-```
+```jl
 R = zeros(7, 7);
 b = @benchmarkable romberg!(r, $x, $y) setup=(r=copy($R))
 
@@ -187,7 +182,7 @@ So `romberg` is ~2× slower than `trapz`, but ~10 digits more accurate.
 
 **x³**
 
-```
+```jl
 x = range(0, 1, length=2^4+1)
 y = x.^3
 exact_answer = 0.25
@@ -196,7 +191,7 @@ tans = trapz(x, y)
 rans = romberg(x, y)
 ```
 
-```
+```jl
 julia> exact_answer - tans
 -0.0009765625
 
@@ -209,7 +204,7 @@ Again, `romberg` is at machine precision accuracy, compared to ~3 digits for
 
 **sin(mx)cos(nx)**
 
-```
+```jl
 m = 3
 n = 4
 x = range(0, π, length=2^6+1)
@@ -220,7 +215,7 @@ tans = trapz(x, y)
 rans = romberg(x, y)
 ```
 
-```
+```jl
 julia> exact_answer - tans
 0.0012075513578178043
 
