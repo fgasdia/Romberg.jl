@@ -75,14 +75,16 @@ of mutations (allocations) must occur.
 
 ## Limitations
 
-**Equally spaced `x`**
+***READ THIS SECTION!***
+
+### Equally spaced `x`
 
 Unlike [Trapz.jl](https://github.com/francescoalemanno/Trapz.jl), Romberg
 integration is a [Newton-Cotes](https://en.wikipedia.org/wiki/Newton%E2%80%93Cotes_formulas)
 formula which requires each element of `x` be equally spaced. This is indirectly
 enforced in `Romberg` by requiring `x::AbstractRange`.
 
-**`length(x) - 1` must be a power of 2**
+### `length(x) - 1` must be a power of 2
 
 The Romberg integration algorithm is coded assuming `ispow2(length(x) - 1)`.
 This is obviously a major downside of the implementation. It is _not_ generally
@@ -92,7 +94,7 @@ continuous derivatives. Unless the function being integrated goes to zero at the
 lower or upper limit, then padding either side of `y` with zeros will likely
 cause a significant discontinuity and affect the accuracy of the result.
 
-**1-dimensional**
+### 1-dimensional
 
 Currently `Romberg` only allows integration over a single dimension, so
 `y::AbstractVector`.
