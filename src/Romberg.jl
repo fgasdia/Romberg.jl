@@ -1,3 +1,13 @@
+"""
+The `Romberg` module provides the functions `romberg` and `romberg!` that
+perform a Romberg integration of discrete 1-dimensional data `y` sampled at
+equally spaced points over `x`.
+
+Romberg integration combines the trapezoid method of integration with Richardson
+extrapolation. Significantly lower error estimates of definite integrals can be
+obtained using Romberg integration over the trapezoid method alone, at only
+slightly higher computational cost.
+"""
 module Romberg
 
 using Trapz
@@ -6,21 +16,17 @@ export romberg, romberg!
 
 maxsteps(N) = trunc(Int, log2(prevpow(2, N)))
 
-function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
-    # If this function is called with `@inbounds`, these assertions will be skipped
-    N = length(x)
+"""
+    romberg(x::AbstractRange, y::AbstractVector)
 
-    @boundscheck begin
-        @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(nextpow(2, length(x)))-1`"
-        @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
-        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+Integrate `y` sampled at `x` by Romberg integration applying the maximum possible
+number of Richardson extrapolation steps.
 
-        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
-    end
-
-    return integrate(x, y, max_steps)
-end
-
+Romberg integration requires equally spaced points. This is enforced by
+requiring `x` to be an `AbstractRange`, rather than a dense vector.
+An additional requirement is that `length(x) == 2ⁿ + 1` for any positive integer
+`n`.
+"""
 function romberg(x::AbstractRange, y::AbstractVector)
     N = length(x)
 
@@ -38,7 +44,69 @@ function romberg(x::AbstractRange, y::AbstractVector)
 end
 
 """
-R = zeros(L,L)
+    romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
+
+Integrate `y` sampled at `x` by Romberg integration applying `max_steps` of
+Richardson extrapolation.
+
+`max_steps` is the number of Richardson extrapolation steps applied (also equal
+to the number of trapezoid integrations - 1). In general, the larger it is, the
+lower error in the integration. The largest `max_steps` can be is
+`log2(prevpow(2, length(x)))`.
+
+# Examples
+
+```jldoctest
+julia> x = range(0, π, length=2^8+1);
+julia> romberg(x, sin.(x), 8)
+1.9999999999999996
+```
+
+```jldoctest
+julia> romberg(x, sin.(x), 8)
+ERROR: AssertionError: `max_steps` cannot exceed `log2(prevpow(2, length(x)))`
+[...]
+```
+"""
+function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
+    # If this function is called with `@inbounds`, these assertions will be skipped
+    N = length(x)
+
+    @boundscheck begin
+        @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(prevpow(2, length(x)))`"
+        @assert ispow2(N-1) "`length(x) - 1` must be a power of 2"
+        @assert N == length(y) "Integration over `y` is incompatible with `x`. Make sure their lengths match!"
+
+        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
+    end
+
+    return integrate(x, y, max_steps)
+end
+
+"""
+    romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
+
+Integrate `y` sampled at `x` by Romberg integration, filling in the square
+matrix `R` in place.
+
+The size of `R` determines the number of Richardson extrapolation steps. If `R`
+has size 6×6, 5 extrapolation steps will be performed. In general, for a matrix
+with dimensions `L×L`, `max_steps` corresponds to `L - 1`.
+
+This function is useful to see how the Romberg integration progressed.
+
+# Examples
+
+```jldoctest
+julia> x = range(0, π, length=2^8+1);
+julia> R = zeros(4, 4);
+julia> romberg!(R, x, sin.(x))
+4×4 Array{Float64,2}:
+ 1.92367e-16  0.0      0.0      0.0
+ 1.5708       2.0944   0.0      0.0
+ 1.89612      2.00456  1.99857  0.0
+ 1.97423      2.00027  1.99998  2.00001
+```
 """
 function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
     N = length(x)
@@ -71,7 +139,6 @@ end
 end
 
 @inline function integrate!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
-    N = length(x)
     L = size(R, 1)
 
     trapezoid!(view(R,:,1), x, y)
