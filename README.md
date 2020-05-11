@@ -106,7 +106,9 @@ computational cost_ over trapezoidal integration.
 
 Here are some examples:
 
-### 1) ![\displaystyle \int_0^\pi \sin(x) \,\mathrm{d}x = 2](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(x)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%202)
+### 1)
+
+![\displaystyle \int_0^\pi \sin(x) \,\mathrm{d}x = 2](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(x)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%202)
 
 ```jl
 using BenchmarkTools
@@ -148,7 +150,7 @@ BenchmarkTools.Trial:
 ```jl
 b = @benchmarkable romberg($x, $y);
 
-julia> run(b)
+julia> run(b) 
 BenchmarkTools.Trial:
   memory estimate:  1.38 KiB
   allocs estimate:  16
@@ -183,7 +185,9 @@ BenchmarkTools.Trial:
 So `romberg` is ~2× slower than `trapz`, but nearly at machine precision accuracy,
 ~10 digits more accurate than `trapz`.
 
-### 2) ![\displaystyle \int_0^1 x^3 \,\mathrm{d}x = 0.25](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E1%20x%5E3%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%200.25)
+### 2)
+
+![\displaystyle \int_0^1 x^3 \,\mathrm{d}x = 0.25](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E1%20x%5E3%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%200.25)
 
 ```jl
 x = range(0, 1, length=2^4+1)
@@ -205,7 +209,9 @@ julia> exact_answer - rans
 `romberg` was able to obtain the exact answer, compared to ~3 digits of accuracy
 for `trapz`, at the cost of ~1.7× the run time.
 
-### 3) ![\displaystyle \int_0^\pi \sin(mx)\cos(nx) \,\mathrm{d}x = \frac{2m}{m^2 - n^2}](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(mx)%5Ccos(nx)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%20%5Cfrac%7B2m%7D%7Bm%5E2%20-%20n%5E2%7D)
+### 3)
+
+![\displaystyle \int_0^\pi \sin(mx)\cos(nx) \,\mathrm{d}x = \frac{2m}{m^2 - n^2}](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E%5Cpi%20%5Csin(mx)%5Ccos(nx)%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%20%5Cfrac%7B2m%7D%7Bm%5E2%20-%20n%5E2%7D)
 
 ```jl
 m = 3
