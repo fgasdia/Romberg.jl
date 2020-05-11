@@ -32,6 +32,12 @@ using Trapz
     y = sin.(x).^2
     @test romberg(x, y) ≈ π/4
 
+    m = 3
+    n = 4
+    x = range(0, π, length=2^8+1)
+    y = sin.(m*x).*cos.(n*x)
+    @test romberg(x, y) ≈ 2*m/(m^2 - n^2)
+
     # this one requires lots of samples...
     a = 15
     x = range(0, a, length=2^16+1)

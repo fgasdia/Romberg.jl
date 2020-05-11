@@ -82,7 +82,7 @@ function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
     N = length(x)
 
     @boundscheck begin
-        max_steps <= log2(prevpow(2, N)) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(Int(log2(prevpow(2, length(x)))))"))
+        max_steps <= maxsteps(N) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(maxsteps(length(x)))"))
         ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
         N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
@@ -122,7 +122,7 @@ function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
 
     @boundscheck begin
         # Assume `size(R, 1)` is L (`max_steps + 1`)
-        size(R,1) <= log2(prevpow(2, N)) || throw(DomainError(size(R,1), "dimenensions of `R` cannot be greater than `log2(prevpow(2, length(x)))`"))
+        size(R,1) <= maxsteps(N)+1 || throw(DomainError(size(R,1), "dimenensions of `R` cannot be greater than `log2(prevpow(2, length(x))) + 1`"))
         isequal(size(R)...) || throw(DimensionMismatch("`R` must be square"))
         N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
