@@ -8,7 +8,7 @@ data.
 [Romberg integration](https://en.wikipedia.org/wiki/Romberg's_method) combines trapezoidal integration with Richardson extrapolation for improved accuracy. This package is
 meant to be used for integrating discrete data sampled with equal spacing. If
 your integrand is in functional form, then other methods are probably a better
-choice, e.g. [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl), [QuadGK.jl](https://github.com/JuliaMath/QuadGK.jl), or
+choice, e.g. [QuadGK.jl](https://github.com/JuliaMath/QuadGK.jl) or
 [HCubature.jl](https://github.com/JuliaMath/HCubature.jl), among others. Similarly,
 if you have discrete data sampled at _unequally_ spaced points, you will be limited
 to applying pure trapezoidal integration with [Trapz.jl](https://github.com/francescoalemanno/Trapz.jl).
