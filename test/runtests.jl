@@ -18,6 +18,11 @@ using Trapz
     y = sin.(x)
     @test_throws DomainError romberg(x, y)
 
+    #
+    x = 0:1:0
+    y = sin.(x)
+    R = zeros(5, 5)
+    @test romberg(x, y) == zero(y)
 
     # Integrate different functions
     x = range(0, π, length=2^8+1)

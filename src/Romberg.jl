@@ -39,6 +39,9 @@ julia> romberg(x, sin.(x))
 function romberg(x::AbstractRange, y::AbstractVector)
     N = length(x)
 
+    # Integral over nothing
+    N <= 1 && return zero(y)
+
     @boundscheck begin
         ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
         N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
@@ -82,6 +85,9 @@ ERROR: DomainError with 9:
 """
 function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
     N = length(x)
+
+    # Integral over nothing
+    N <= 1 && return zero(y)
 
     @boundscheck begin
         max_steps <= maxsteps(N) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(maxsteps(length(x)))"))
