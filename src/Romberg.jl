@@ -40,7 +40,7 @@ function romberg(x::AbstractRange, y::AbstractVector)
     N = length(x)
 
     # Integral over nothing
-    N <= 1 && return zero(y)
+    N <= 1 && return zero(eltype(y))
 
     @boundscheck begin
         ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
@@ -87,7 +87,7 @@ function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
     N = length(x)
 
     # Integral over nothing
-    N <= 1 && return zero(y)
+    N <= 1 && return zero(eltype(y))
 
     @boundscheck begin
         max_steps <= maxsteps(N) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(maxsteps(length(x)))"))
@@ -129,6 +129,8 @@ julia> romberg!(R, x, sin.(x))
 """
 function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
     N = length(x)
+
+    N <= 1 && return fill!(R, 0)
 
     @boundscheck begin
         # Assume `size(R, 1)` is L (`max_steps + 1`)

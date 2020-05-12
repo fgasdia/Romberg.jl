@@ -8,21 +8,25 @@ using Trapz
     y = sin.(x)
 
     @test romberg(x, y) == romberg(x, y, 8)
-    @test_throws DomainError romberg(x, y, 9)
 
     max_steps = 7
     R = zeros(max_steps+1, max_steps+1)
     @test romberg!(R, x, y)[end] == romberg(x, y, max_steps)
 
+    # Test `max_steps` too large
+    @test_throws DomainError romberg(x, y, 9)
+
+    # Test ispow(length(x) - 1) == false
     x = range(0, π, length=2^8)
     y = sin.(x)
     @test_throws DomainError romberg(x, y)
 
-    #
-    x = 0:1:0
+    # Test length(x) == 1
+    x = 0:0
     y = sin.(x)
-    R = zeros(5, 5)
-    @test romberg(x, y) == zero(y)
+    R = zeros(1, 1)
+    @test romberg(x, y) == zero(eltype(y))
+    @test romberg!(R, x, y) == zeros(1,1)
 
     # Integrate different functions
     x = range(0, π, length=2^8+1)
