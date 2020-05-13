@@ -198,7 +198,7 @@ end
         step_size = div(N-1, 2^(i-1))
 
         if step_size == 0
-            # only triggered when N == 1
+            # only triggered when N == 1?
             idxs = 1:N-1:N
         else
             idxs = 1:step_size:N

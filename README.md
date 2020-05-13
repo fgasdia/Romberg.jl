@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/fgasdia/Romberg.jl.svg?branch=master)](https://travis-ci.com/fgasdia/Romberg.jl)
 
+**Note** [NumericalIntegration.jl](https://github.com/dextorious/NumericalIntegration.jl) offers a faster Romberg integration routine as `integrate(x, y, RombergEven())`. 
+
 A simple Julia package to perform Romberg integration over discrete 1-dimensional
 data.
 
