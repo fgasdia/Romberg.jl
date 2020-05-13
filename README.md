@@ -138,10 +138,10 @@ BenchmarkTools.Trial:
   memory estimate:  96 bytes
   allocs estimate:  1
   --------------
-  minimum time:     1.118 μs (0.00% GC)
-  median time:      1.397 μs (0.00% GC)
-  mean time:        1.366 μs (0.00% GC)
-  maximum time:     23.480 μs (0.00% GC)
+  minimum time:     276.000 ns (0.00% GC)
+  median time:      290.000 ns (0.00% GC)
+  mean time:        301.079 ns (0.00% GC)
+  maximum time:     20.295 μs (0.00% GC)
   --------------
   samples:          10000
   evals/sample:     1
@@ -155,10 +155,10 @@ BenchmarkTools.Trial:
   memory estimate:  1.38 KiB
   allocs estimate:  16
   --------------
-  minimum time:     2.235 μs (0.00% GC)
-  median time:      2.514 μs (0.00% GC)
-  mean time:        2.544 μs (0.00% GC)
-  maximum time:     36.324 μs (0.00% GC)
+  minimum time:     1.354 μs (0.00% GC)
+  median time:      1.415 μs (0.00% GC)
+  mean time:        1.587 μs (0.00% GC)
+  maximum time:     42.352 μs (0.00% GC)
   --------------
   samples:          10000
   evals/sample:     1
@@ -173,17 +173,18 @@ BenchmarkTools.Trial:
   memory estimate:  1.09 KiB
   allocs estimate:  14
   --------------
-  minimum time:     1.955 μs (0.00% GC)
-  median time:      2.234 μs (0.00% GC)
-  mean time:        2.305 μs (0.00% GC)
-  maximum time:     39.381 μs (0.00% GC)
+  minimum time:     1.298 μs (0.00% GC)
+  median time:      1.348 μs (0.00% GC)
+  mean time:        1.439 μs (0.00% GC)
+  maximum time:     33.786 μs (0.00% GC)
   --------------
   samples:          10000
   evals/sample:     1
 ```
 
-So `romberg` is ~2× slower than `trapz`, but nearly at machine precision accuracy,
-~10 digits more accurate than `trapz`.
+So `romberg` is ~5× slower than `trapz`, but nearly at machine precision accuracy,
+~10 digits more accurate than `trapz`. Even if 5 times as many samples of the
+function are used in `trapz`, it's still ~8 digits accuracy behind the `romberg`.
 
 ### 2)
 
@@ -207,7 +208,7 @@ julia> exact_answer - rans
 ```
 
 `romberg` was able to obtain the exact answer, compared to ~3 digits of accuracy
-for `trapz`, at the cost of ~1.7× the run time.
+for `trapz`, at the cost of ~7× the run time.
 
 ### 3)
 
@@ -232,4 +233,4 @@ julia> exact_answer - rans
 6.515672331675049e-7
 ```
 
-`romberg` is ~4 digits better accuracy than `trapz` and ~2× the run time.
+`romberg` is ~4 digits better accuracy than `trapz` and ~5× the run time.

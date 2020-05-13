@@ -36,24 +36,25 @@ julia> romberg(x, sin.(x))
 1.9999999999999996
 ```
 """
-function romberg(x::AbstractRange, y::AbstractVector)
+function romberg(x::AbstractRange{Tx}, y::AbstractVector{Ty}) where {Tx,Ty}
     N = length(x)
 
     # Integral over nothing
-    N <= 1 && return zero(eltype(y))
+    N <= 1 && return zero(promote_type(Tx,Ty))
 
     @boundscheck begin
-        ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
         N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
 
         # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
     end
 
-    # Automatically select max_steps
-    max_steps = maxsteps(N)
-    @assert max_steps <= log2(prevpow(2, N)) "`max_steps` cannot exceed `log2(prevpow(2, length(x)))`"
-
-    return integrate(x, y, max_steps)
+    pN = prevpow(2, N-1) + 1
+    if pN == N
+        max_steps = maxsteps(N)
+        return integrate(x, y, max_steps)
+    else
+        return recursive_integration(x, y)
+    end
 end
 
 """
@@ -83,11 +84,11 @@ ERROR: DomainError with 9:
 [...]
 ```
 """
-function romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
+function romberg(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
     N = length(x)
 
     # Integral over nothing
-    N <= 1 && return zero(eltype(y))
+    N <= 1 && return zero(promote_type(Tx,Ty))
 
     @boundscheck begin
         max_steps <= maxsteps(N) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(maxsteps(length(x)))"))
@@ -144,6 +145,26 @@ function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
     integrate!(R, x, y)
 end
 
+function recursive_integration(x, y)
+    # Needed if `length(x) - 1` is not a power of 2
+
+    N = length(x)
+
+    N <= 1 && return zero(promote_type(x,y))
+
+    pN = prevpow(2, N-1) + 1
+
+    if pN == N
+        # `ispow2(N - 1) == true`
+        return integrate(x, y, maxsteps(N))
+    elseif pN < N
+        # `ispow2(N - 1) == false`
+        return integrate(x[1:pN], view(y,1:pN), maxsteps(pN)) + recursive_integration(x[pN:N], view(y,pN:N))
+    else
+        return trapz(x, y)
+    end
+end
+
 @inline function integrate(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
     # `max_steps` are extrapolation steps, size of `R` is `max_steps + 1`
     L = max_steps + 1
@@ -171,7 +192,14 @@ end
 @inline function trapezoid!(R, x, y)
     N = length(x)
     @inbounds for i in eachindex(R)
-        idxs = 1:div(N-1, 2^(i-1)):N
+        step_size = div(N-1, 2^(i-1))
+
+        if step_size == 0
+            # only triggered when N == 1
+            idxs = 1:N-1:N
+        else
+            idxs = 1:step_size:N
+        end
 
         R[i] = trapz(x[idxs], view(y,idxs))
     end

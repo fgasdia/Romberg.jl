@@ -13,20 +13,39 @@ using Trapz
     R = zeros(max_steps+1, max_steps+1)
     @test romberg!(R, x, y)[end] == romberg(x, y, max_steps)
 
+    # Test ispow2(length(x) - 1) == false
+    x = range(0, π, length=2^8)
+    y = sin.(x)
+    @test romberg(x, y) ≈ 2
+
+    x = range(0, π, length=2^8-1)
+    y = sin.(x)
+    @test romberg(x, y) ≈ 2
+
     # Test `max_steps` too large
     @test_throws DomainError romberg(x, y, 9)
 
     # Test ispow(length(x) - 1) == false
-    x = range(0, π, length=2^8)
-    y = sin.(x)
-    @test_throws DomainError romberg(x, y)
+    # x = range(0, π, length=2^8)
+    # y = sin.(x)
+    # @test_throws DomainError romberg(x, y)
 
     # Test length(x) == 1
     x = 0:0
     y = sin.(x)
     R = zeros(1, 1)
-    @test romberg(x, y) == zero(eltype(y))
+    @test romberg(x, y) == 0
     @test romberg!(R, x, y) == zeros(1,1)
+
+    # Test length(x) == 2
+    x = range(0, 1, length=2)
+    y = x.^2
+    @test romberg(x,y) ≈ trapz(x, y)  # integration is inaccurate
+
+    # Test length(x) == 3
+    x = range(0, 1, length=3)
+    y = x.^2
+    @test romberg(x, y) ≈ 1/3
 
     # Integrate different functions
     x = range(0, π, length=2^8+1)
@@ -35,7 +54,7 @@ using Trapz
 
     x = range(0, 1, length=2^8+1)
     y = x.^3
-    @test romberg(x, y) ≈ 0.25
+    @test romberg(x, y) ≈ 1/4
 
     x = range(0, π/2, length=2^5+1)
     y = sin.(x).^2
