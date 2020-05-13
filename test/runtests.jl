@@ -25,11 +25,6 @@ using Trapz
     # Test `max_steps` too large
     @test_throws DomainError romberg(x, y, 9)
 
-    # Test ispow(length(x) - 1) == false
-    # x = range(0, π, length=2^8)
-    # y = sin.(x)
-    # @test_throws DomainError romberg(x, y)
-
     # Test length(x) == 1
     x = 0:0
     y = sin.(x)

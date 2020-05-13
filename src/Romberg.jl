@@ -24,8 +24,9 @@ number of Richardson extrapolation steps.
 
 Romberg integration requires equally spaced points. This is enforced by
 requiring `x` to be an `AbstractRange`, rather than a dense vector.
-An additional requirement is that `length(x) == 2ⁿ + 1` for any positive integer
-`n`.
+
+The algorithm is most efficient if `length(x) == 2ⁿ + 1` for any positive integer
+`n`. However, the function will still work for any `length(x)`.
 
 # Examples
 
@@ -67,6 +68,8 @@ Richardson extrapolation.
 to the number of trapezoid integrations - 1). In general, the larger it is, the
 lower error in the integration. The largest `max_steps` can be is
 `log2(prevpow(2, length(x)))`.
+
+When specifying `max_steps`, `length(x) - 1` must be a power of 2.
 
 # Examples
 

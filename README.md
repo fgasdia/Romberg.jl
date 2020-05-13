@@ -73,8 +73,6 @@ of mutations (allocations) must occur.
 
 ## Limitations
 
-***READ THIS SECTION!***
-
 ### Equally spaced `x`
 
 Unlike [Trapz.jl](https://github.com/francescoalemanno/Trapz.jl), Romberg
@@ -82,15 +80,13 @@ integration is a [Newton-Cotes](https://en.wikipedia.org/wiki/Newton%E2%80%93Cot
 formula which requires each element of `x` be equally spaced. This is indirectly
 enforced in `Romberg` by requiring `x::AbstractRange`.
 
-### `length(x) - 1` must be a power of 2
+### Most efficient if `length(x) - 1` is a power of 2
 
-The Romberg integration algorithm is coded assuming `ispow2(length(x) - 1)`.
-This is obviously a major downside of the implementation. It is _not_ generally
-recommended to simply expand `x` and pad `y` with zeros in order to meet this
-criteria because the extrapolation step assumes the integrand has at least a few
-continuous derivatives. Unless the function being integrated goes to zero at the
-lower or upper limit, then padding either side of `y` with zeros will likely
-cause a discontinuity and affect the accuracy of the result.
+The Romberg integration algorithm is coded assuming `ispow2(length(x) - 1) == true`.
+Therefore, `Romberg` is most efficient if these criteria can be met. However,
+`romberg(x,y)` can be used for `x` of any length at reduced accuracy and increased
+runtime. This works by applying Romberg integration piecewise across sections of
+`x` that do meet the criteria.
 
 ### 1-dimensional
 
@@ -101,8 +97,8 @@ Currently `Romberg` only allows integration over a single dimension, so
 
 Given the limitations of `Romberg`, why use it over `Trapz`? For discrete
 samples of an underlying smooth function, Romberg integration can obtain
-_significantly higher accuracy_ estimates at relatively _little additional
-computational cost_ over trapezoidal integration.
+_significantly higher accuracy_ estimates at relatively _low additional
+computational cost_ over trapezoidal integration for a given number of samples.
 
 Here are some examples:
 
