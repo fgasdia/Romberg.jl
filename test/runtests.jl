@@ -71,4 +71,7 @@ using Romberg, Test
     x = range(1e-15, 1, length=2^16+1)
     y = log.(x)./(1 .+ x)
     @test romberg(x, y)[1] ≈ -π^2/12  atol=1e-4
+
+    # make sure it works for abstractly-typed y and integer Δx
+    @test romberg(1, Any[3,3,3,3,3,3,3])[1] == 6*3
 end
