@@ -24,7 +24,11 @@ import Primes, Richardson
         for k = 1:K
             step *= f
             sΔx = step*Δx
-            vals[i -= 1] = (sΔx * (sum(y[begin+step:step:end-step]) + endsum), sΔx)
+            if i == 2 # last iteration (empty sum)
+                vals[1] = (sΔx * endsum, sΔx)
+            else
+                vals[i -= 1] = (sΔx * (sum(y[begin+step:step:end-step]) + endsum), sΔx)
+            end
         end
     end
     return Richardson.extrapolate!(vals, power=2; kws...)
