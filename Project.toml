@@ -4,13 +4,14 @@ authors = ["Forrest Gasdia", "Steven G. Johnson"]
 version = "0.2.0"
 
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Primes = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
 Richardson = "708f8203-808e-40c0-ba2d-98a6953ed40d"
 
 [compat]
-julia = "1"
 Primes = "0.5"
 Richardson = "1.4"
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

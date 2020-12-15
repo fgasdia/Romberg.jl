@@ -12,7 +12,7 @@ module Romberg
 
 export romberg
 
-import Primes, Richardson
+import Primes, Richardson, LinearAlgebra
 
 @views function _romberg(Δx, y, endsum, factors, numfactors; kws...)
     b, e = firstindex(y), lastindex(y)
@@ -39,7 +39,10 @@ function romberg(Δx::Real, y::AbstractVector; kws...)
     n = length(y)
     endsum = n ≥ 2 ? (first(y)+last(y))/2 : (n == 1 ? zero(first(y))/1 : zero(eltype(y))/1)
     Δxf = float(Δx)
-    n <= 2 && return (endsum * Δxf, zero(endsum) * Δxf)
+    if n <= 2
+        I = endsum * Δxf
+        return (I, LinearAlgebra.norm(I))
+    end
     m = n - 1
     if ispow2(m)
         # fast path: no need to allocate factors array
