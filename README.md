@@ -101,7 +101,7 @@ julia> @btime romberg($x, $y);
   515.078 ns (1 allocation: 192 bytes)
 ```
 
-So `romberg` is ~50% slower than `trapz`, but achieves nearly machine-precision accuracy,
+So `romberg` is ~30% slower than `trapz`, but achieves nearly machine-precision accuracy,
 ~12 digits more accurate than `trapz`. Even if 500 times as many samples of the
 function were to be used in `trapz`, it would still be ~7 digits less accurate than `romberg`.
 
