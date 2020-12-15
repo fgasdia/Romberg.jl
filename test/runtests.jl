@@ -1,4 +1,4 @@
-using Romberg, LinearAlgebra, Test
+using Romberg, Test
 
 @testset "Romberg.jl" begin
     # Test interfaces
@@ -76,5 +76,5 @@ using Romberg, LinearAlgebra, Test
     @test romberg(1, Any[3,3,3,3,3,3,3])[1] == 6*3
 
     @test @inferred(romberg(1, [1//2, 1//4])) === (0.375, 0.375)
-    @test @inferred(romberg(1, [[1//2,1//1], [1//4,1//1]])) == ([0.375,1.0], norm([0.375,1.0]))
+    @test @inferred(romberg(1, [[1//2,1//1], [1//4,1//1]])) == ([0.375,1.0], hypot(0.375,1.0))
 end
