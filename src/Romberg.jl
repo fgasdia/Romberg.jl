@@ -42,10 +42,10 @@ function romberg(Δx::Real, y::AbstractVector; kws...)
             k += 1
             m >>= 1
         end
-        return _romberg(Δx, y, endsum, (2=>k,), k; kws...)
+        return _romberg(float(Δx), y, endsum, (2=>k,), k; kws...)
     else
         factors = Primes.factor(m)
-        return _romberg(Δx, y, endsum, factors, sum(values(factors)); kws...)
+        return _romberg(float(Δx), y, endsum, factors, sum(values(factors)); kws...)
     end
 end
 
