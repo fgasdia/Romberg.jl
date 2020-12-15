@@ -44,7 +44,7 @@ function romberg(Δx::Real, y::AbstractVector; kws...)
         end
         return _romberg(Δx, y, endsum, (2=>k,), k; kws...)
     else
-        factors = Primes.factor(n-1)
+        factors = Primes.factor(m)
         return _romberg(Δx, y, endsum, factors, sum(values(factors)); kws...)
     end
 end
@@ -62,8 +62,8 @@ to Richardson extrapolation of a trapezoidal rule to smaller and smaller `Δx`.
 The return value is a tuple `(I, E)` of the estimated integral `I` and
 an estimated upper bound `E` on the error in `I`.
 
-The algorithm is most effective if `length(x) == 2ⁿ + 1` for any positive integer
-`n`, but in general it can handle any non-prime `length(x) - 1`.  If `length(x) - 1`
+The algorithm is most effective if `length(x) - 1` has many small factors,
+ideally being a power of two, but it can handle any length.  If `length(x) - 1`
 is a prime number, it is nearly equivalent to the trapezoidal rule without extrapolation.
 
 # Examples
