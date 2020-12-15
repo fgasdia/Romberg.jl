@@ -15,7 +15,8 @@ export romberg
 import Primes, Richardson
 
 @views function _romberg(Δx, y, endsum, factors, numfactors; kws...)
-    v = (Δx * (sum(y[begin+1:end-1]) + endsum), Δx)
+    b, e = firstindex(y), lastindex(y)
+    v = (Δx * (sum(y[b+1:e-1]) + endsum), Δx)
     vals = Vector{typeof(v)}(undef, numfactors+1)
     i = numfactors+1
     vals[i] = v
@@ -27,7 +28,7 @@ import Primes, Richardson
             if i == 2 # last iteration (empty sum)
                 vals[1] = (sΔx * endsum, sΔx)
             else
-                vals[i -= 1] = (sΔx * (sum(y[begin+step:step:end-step]) + endsum), sΔx)
+                vals[i -= 1] = (sΔx * (sum(y[b+step:step:e-step]) + endsum), sΔx)
             end
         end
     end

@@ -5,7 +5,7 @@ using Romberg, Test
     x = range(0, π, length=2^8+1)
     y = sin.(x)
 
-    @test romberg(x, y) == romberg(x, y, maxeval=8)
+    @test romberg(x, y) == romberg(x, y, maxeval=9)
 
     # Test ispow2(length(x) - 1) == false
     x = range(0, π, length=2^8)
