@@ -74,4 +74,6 @@ using Romberg, Test
 
     # make sure it works for abstractly-typed y and integer Δx
     @test romberg(1, Any[3,3,3,3,3,3,3])[1] == 6*3
+
+    @test @inferred(romberg(1, [1//2, 1//4])) === (0.375, 0.0)
 end

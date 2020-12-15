@@ -38,7 +38,8 @@ end
 function romberg(Δx::Real, y::AbstractVector; kws...)
     n = length(y)
     endsum = n ≥ 2 ? (first(y)+last(y))/2 : (n == 1 ? zero(first(y))/1 : zero(eltype(y))/1)
-    n <= 2 && return endsum * float(Δx)
+    Δxf = float(Δx)
+    n <= 2 && return (endsum * Δxf, zero(endsum) * Δxf)
     m = n - 1
     if ispow2(m)
         # fast path: no need to allocate factors array
@@ -47,10 +48,10 @@ function romberg(Δx::Real, y::AbstractVector; kws...)
             k += 1
             m >>= 1
         end
-        return _romberg(float(Δx), y, endsum, (2=>k,), k; kws...)
+        return _romberg(Δxf, y, endsum, (2=>k,), k; kws...)
     else
         factors = Primes.factor(m)
-        return _romberg(float(Δx), y, endsum, factors, sum(values(factors)); kws...)
+        return _romberg(Δxf, y, endsum, factors, sum(values(factors)); kws...)
     end
 end
 
