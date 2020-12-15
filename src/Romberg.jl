@@ -37,7 +37,7 @@ end
 
 function romberg(Δx::Real, y::AbstractVector; kws...)
     n = length(y)
-    endsum = n ≥ 2 ? (y[begin]+y[end])/2 : (n == 1 ? zero(y[1])/1 : zero(eltype(y))/1)
+    endsum = n ≥ 2 ? (first(y)+last(y))/2 : (n == 1 ? zero(first(y))/1 : zero(eltype(y))/1)
     n <= 2 && return endsum * Δx
     m = n - 1
     if ispow2(m)
