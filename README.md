@@ -50,7 +50,7 @@ extrapolating back towards `Δx → 0`.   This works by factorizing `length(x) -
 and therefore works best when `length(x) - 1` has **many small factors**, ideally
 being a power of two.
 
-(In the even that `length(x) - 1` is prime, the `romberg` function is nearly
+(In the event that `length(x) - 1` is prime, the `romberg` function is nearly
 equivalent to the trapezoidal rule, since it extrapolates only from 2 points to
 `length(x)` points.)
 

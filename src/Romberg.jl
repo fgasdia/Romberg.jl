@@ -22,7 +22,7 @@ import Primes, Richardson, LinearAlgebra
     vals[i] = v
     step = 1
     for (f,K) in factors
-        for k = 1:K
+        @inbounds for k = 1:K
             step *= f
             sΔx = step*Δx
             if i == 2 # last iteration (empty sum)
