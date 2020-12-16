@@ -12,9 +12,11 @@ Richardson = "708f8203-808e-40c0-ba2d-98a6953ed40d"
 Primes = "0.5"
 Richardson = "1.4"
 julia = "1"
+Trapz = "2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Trapz = "592b5752-818d-11e9-1e9a-2b8ca4a44cd1"
 
 [targets]
-test = ["Test"]
+test = ["Test", "Trapz"]
