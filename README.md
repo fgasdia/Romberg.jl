@@ -26,7 +26,7 @@ the error.
 ```jl
 using Romberg
 
-x = range(0, pi, length=2^8+1)
+x = range(0, stop=π, length=2^8+1)
 y = sin.(x)
 
 romberg(x, y)
@@ -77,7 +77,7 @@ Here are some examples:
 using BenchmarkTools
 using Trapz, Romberg
 
-x = range(0, π, length=2^6+1)
+x = range(0, stop=π, length=2^6+1)
 y = sin.(x)
 exact_answer = 2
 
@@ -110,7 +110,7 @@ function were to be used in `trapz`, it would still be ~7 digits less accurate t
 ![\displaystyle \int_0^1 x^3 \,\mathrm{d}x = 0.25](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle%20%5Cint_0%5E1%20x%5E3%20%5C%2C%5Cmathrm%7Bd%7Dx%20%3D%200.25)
 
 ```jl
-x = range(0, 1, length=2^4+1)
+x = range(0, stop=1, length=2^4+1)
 y = x.^3
 exact_answer = 0.25
 
@@ -137,7 +137,7 @@ for `trapz`, at the cost of ~2× the run time.
 ```jl
 m = 3
 n = 4
-x = range(0, π, length=2^6+1)
+x = range(0, stop=π, length=2^6+1)
 y = sin.(m*x).*cos.(n*x)
 exact_answer = 2*m/(m^2 - n^2)
 
