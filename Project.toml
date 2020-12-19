@@ -1,12 +1,16 @@
 name = "Romberg"
 uuid = "ff01fdde-158c-414c-948f-c94b4a236685"
-authors = ["Forrest Gasdia"]
-version = "0.1.0"
+authors = ["Forrest Gasdia", "Steven G. Johnson"]
+version = "0.2.0"
 
 [deps]
-Trapz = "592b5752-818d-11e9-1e9a-2b8ca4a44cd1"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Primes = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
+Richardson = "708f8203-808e-40c0-ba2d-98a6953ed40d"
 
 [compat]
+Primes = "0.5"
+Richardson = "1.4"
 julia = "1"
 Trapz = "2"
 

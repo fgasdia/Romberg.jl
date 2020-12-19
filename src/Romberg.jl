@@ -1,6 +1,6 @@
 """
-The `Romberg` module provides the functions `romberg` and `romberg!` that
-perform a Romberg integration of discrete 1-dimensional data `y` sampled at
+The `Romberg` module provides the function `romberg` that
+performs a Romberg integration of discrete 1-dimensional data `y` sampled at
 equally spaced points over `x`.
 
 Romberg integration combines the trapezoid method of integration with Richardson
@@ -10,23 +10,70 @@ slightly higher computational cost.
 """
 module Romberg
 
-using Trapz
+export romberg
 
-export romberg, romberg!
+import Primes, Richardson, LinearAlgebra
 
-maxsteps(N) = trunc(Int, log2(prevpow(2, N)))
+@views function _romberg(Δx, y, endsum, factors, numfactors; kws...)
+    b, e = firstindex(y), lastindex(y)
+    v = (Δx * (sum(y[b+1:e-1]) + endsum), Δx)
+    vals = Vector{typeof(v)}(undef, numfactors+1)
+    i = numfactors+1
+    vals[i] = v
+    step = 1
+    for (f,K) in factors
+        @inbounds for k = 1:K
+            step *= f
+            sΔx = step*Δx
+            if i == 2 # last iteration (empty sum)
+                vals[1] = (sΔx * endsum, sΔx)
+            else
+                vals[i -= 1] = (sΔx * (sum(y[b+step:step:e-step]) + endsum), sΔx)
+            end
+        end
+    end
+    return Richardson.extrapolate!(vals, power=2; kws...)
+end
+
+function romberg(Δx::Real, y::AbstractVector; kws...)
+    n = length(y)
+    endsum = n ≥ 2 ? (first(y)+last(y))/2 : (n == 1 ? zero(first(y))/1 : zero(eltype(y))/1)
+    Δxf = float(Δx)
+    if n <= 2
+        I = endsum * Δxf
+        return (I, LinearAlgebra.norm(I))
+    end
+    m = n - 1
+    if ispow2(m)
+        # fast path: no need to allocate factors array
+        k = 0
+        while m > 1
+            k += 1
+            m >>= 1
+        end
+        return _romberg(Δxf, y, endsum, (2=>k,), k; kws...)
+    else
+        factors = Primes.factor(m)
+        return _romberg(Δxf, y, endsum, factors, sum(values(factors)); kws...)
+    end
+end
+
+romberg(x::AbstractRange, y::AbstractVector; kws...) = romberg(step(x), y; kws...)
 
 """
+    romberg(Δx::Real, y::AbstractVector)
     romberg(x::AbstractRange, y::AbstractVector)
 
-Integrate `y` sampled at `x` by Romberg integration applying the maximum possible
-number of Richardson extrapolation steps.
+Integrate `y` sampled at points with equal spacing `Δx`, or equivalently
+a range `x` (`Δx=step(x)`) by Romberg integration, which corresponds
+to Richardson extrapolation of a trapezoidal rule to smaller and smaller `Δx`.
 
-Romberg integration requires equally spaced points. This is enforced by
-requiring `x` to be an `AbstractRange`, rather than a dense vector.
+The return value is a tuple `(I, E)` of the estimated integral `I` and
+an estimated upper bound `E` on the error in `I`.
 
-The algorithm is most efficient if `length(x) == 2ⁿ + 1` for any positive integer
-`n`. However, the function will still work for any `length(x)`.
+The algorithm is most effective if `length(x) - 1` has many small factors,
+ideally being a power of two, but it can handle any length.  If `length(x) - 1`
+is a prime number, it is nearly equivalent to the trapezoidal rule without extrapolation.
 
 # Examples
 
@@ -34,223 +81,9 @@ The algorithm is most efficient if `length(x) == 2ⁿ + 1` for any positive inte
 julia> x = range(0, π, length=2^8+1);
 
 julia> romberg(x, sin.(x))
-1.9999999999999996
+(2.0000000000000018, 1.9984014443252818e-15)
 ```
 """
-function romberg(x::AbstractRange{Tx}, y::AbstractVector{Ty}) where {Tx,Ty}
-    N = length(x)
-
-    # Integral over nothing
-    N <= 1 && return zero(promote_type(Tx,Ty))
-
-    @boundscheck begin
-        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
-
-        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
-    end
-
-    pN = prevpow(2, N-1) + 1
-    if pN == N
-        max_steps = maxsteps(N)
-        return integrate(x, y, max_steps)
-    else
-        return recursive_integration(x, y)
-    end
-end
-
-"""
-    romberg(x::AbstractRange, y::AbstractVector, max_steps::Integer)
-
-Integrate `y` sampled at `x` by Romberg integration applying `max_steps` of
-Richardson extrapolation.
-
-`max_steps` is the number of Richardson extrapolation steps applied (also equal
-to the number of trapezoid integrations - 1). In general, the larger it is, the
-lower error in the integration. The largest `max_steps` can be is
-`log2(prevpow(2, length(x)))`.
-
-When specifying `max_steps`, `length(x) - 1` must be a power of 2.
-
-# Examples
-
-```jldoctest
-julia> x = range(0, π, length=2^8+1);
-
-julia> romberg(x, sin.(x), 8)
-1.9999999999999996
-```
-
-```jldoctest
-julia> romberg(x, sin.(x), 9)
-ERROR: DomainError with 9:
-`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = 8
-[...]
-```
-"""
-function romberg(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
-    N = length(x)
-
-    # Integral over nothing
-    N <= 1 && return zero(promote_type(Tx,Ty))
-
-    @boundscheck begin
-        max_steps <= maxsteps(N) || throw(DomainError(max_steps, "`max_steps` cannot exceed `log2(prevpow(2, length(x)))` = $(maxsteps(length(x)))"))
-        ispow2(N-1) || throw(DomainError(length(x), "`length(x) - 1` must be a power of 2"))
-        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
-
-        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
-    end
-
-    return integrate(x, y, max_steps)
-end
-
-"""
-    romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
-
-Integrate `y` sampled at `x` by Romberg integration, filling in the square
-matrix `R` in place.
-
-The size of `R` determines the number of Richardson extrapolation steps. If `R`
-has size 6×6, 5 extrapolation steps will be performed. In general, for a matrix
-with dimensions `L×L`, `max_steps` corresponds to `L - 1`.
-
-This function is useful to see how the Romberg integration progressed.
-
-# Examples
-
-```jldoctest
-julia> x = range(0, π, length=2^8+1);
-
-julia> R = zeros(4, 4);
-
-julia> romberg!(R, x, sin.(x))
-4×4 Array{Float64,2}:
- 1.92367e-16  0.0      0.0      0.0
- 1.5708       2.0944   0.0      0.0
- 1.89612      2.00456  1.99857  0.0
- 1.97423      2.00027  1.99998  2.00001
-```
-"""
-function romberg!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
-    N = length(x)
-
-    N <= 1 && return fill!(R, 0)
-
-    @boundscheck begin
-        # Assume `size(R, 1)` is L (`max_steps + 1`)
-        size(R,1) <= maxsteps(N)+1 || throw(DomainError(size(R,1), "dimenensions of `R` cannot be greater than `log2(prevpow(2, length(x))) + 1`"))
-        isequal(size(R)...) || throw(DimensionMismatch("`R` must be square"))
-        N == length(y) || throw(DimensionMismatch("length of `y` not equal to length of `x`"))
-
-        # NOTE: by requiring x::AbstractRange, a fixed step size is guaranteed
-    end
-
-    integrate!(R, x, y)
-end
-
-function recursive_integration(x, y)
-    # Needed if `length(x) - 1` is not a power of 2
-
-    N = length(x)
-
-    N <= 1 && return zero(promote_type(x,y))
-
-    pN = prevpow(2, N-1) + 1
-
-    if pN == N
-        # `ispow2(N - 1) == true`
-        return integrate(x, y, maxsteps(N))
-    elseif pN < N
-        # `ispow2(N - 1) == false`
-        return integrate(x[1:pN], view(y,1:pN), maxsteps(pN)) + recursive_integration(x[pN:N], view(y,pN:N))
-    else
-        return trapz(x, y)
-    end
-end
-
-@inline function integrate(x::AbstractRange{Tx}, y::AbstractVector{Ty}, max_steps::Integer) where {Tx,Ty}
-    # `max_steps` are extrapolation steps, size of `R` is `max_steps + 1`
-    L = max_steps + 1
-
-    # `Rp` is "Rprevious", `Rc` is "Rcurrent"
-    Rp = Array{promote_type(Tx,Ty)}(undef, L)
-    Rc = similar(Rp)
-
-    trapezoid!(Rp, x, y)
-    extrapolate!(Rp, Rc)
-
-    # best estimate
-    return Rc[end]
-end
-
-@inline function integrate!(R::AbstractMatrix, x::AbstractRange, y::AbstractVector)
-    L = size(R, 1)
-
-    trapezoid!(view(R,:,1), x, y)
-    extrapolate!(R)
-
-    return R
-end
-
-@inline function trapezoid!(R, x, y)
-    N = length(x)
-    @inbounds for i in eachindex(R)
-        step_size = div(N-1, 2^(i-1))
-
-        if step_size == 0
-            # only triggered when N == 1?
-            idxs = 1:N-1:N
-        else
-            idxs = 1:step_size:N
-        end
-
-        R[i] = trapz(x[idxs], view(y,idxs))
-    end
-end
-
-@inline function extrapolate!(Rp, Rc)
-    L = length(Rp)
-    @inbounds for j = 2:L
-        # Precompute reused values
-        pow_prev = 4^(j-1)
-        den = inv(pow_prev - 1)
-
-        @inbounds for i = j:L
-            Rc[i] = (pow_prev*Rp[i] - Rp[i-1]) * den
-        end
-
-        # Only copying the relevant values! (not necessary on last loop)
-        if j < L
-            copyto!(Rp, j, Rc, j, L-j+1)
-        end
-    end
-end
-
-@inline function extrapolate!(R)
-    L = size(R,1)
-    @inbounds for j = 2:L
-        # Precompute reused values
-        pow_prev = 4^(j-1)
-        den = inv(pow_prev - 1)
-
-        @inbounds for i = j:L
-            R[i,j] = (pow_prev*R[i,j-1] - R[i-1,j-1]) * den
-        end
-    end
-end
-
-function error_test(R, max_steps)
-    # See http://www.sci.utah.edu/~beiwang/teaching/cs6210-fall-2016/lecture24.pdf
-
-    # The ratio of the difference between successive entries in column `j`
-    # should be approximately 4^j.
-
-    ratio = zeros(max_steps-2, max_steps-2)
-    for j = 1:max_steps-2
-        ratio[j:end,j] .= (R[1+j:end-1,j] - R[j:end-2,j]) ./ (R[2+j:end,j] - R[1+j:end-1,j])
-    end
-
-    return ratio
-end
+romberg
 
 end # module
