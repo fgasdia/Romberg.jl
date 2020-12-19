@@ -31,8 +31,3 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[[Trapz]]
-git-tree-sha1 = "aff96deaaa38e3b52a5af1dd3da376d49bf6ec9a"
-uuid = "592b5752-818d-11e9-1e9a-2b8ca4a44cd1"
-version = "2.0.2"
