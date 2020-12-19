@@ -78,7 +78,7 @@ is a prime number, it is nearly equivalent to the trapezoidal rule without extra
 # Examples
 
 ```jldoctest
-julia> x = range(0, π, length=2^8+1);
+julia> x = range(0, stop=π, length=2^8+1);
 
 julia> romberg(x, sin.(x))
 (2.0000000000000018, 1.9984014443252818e-15)
