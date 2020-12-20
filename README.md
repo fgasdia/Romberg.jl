@@ -14,10 +14,10 @@ need to use a low-order method like [Trapz.jl](https://github.com/francescoalema
 
 ## Usage
 
-First, install with
+First, install with the [Julia package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/):
 
 ```jl
-] add https://github.com/fgasdia/Romberg.jl
+] add Romberg
 ```
 
 The Romberg module exports a single function, `romberg(x,y)`, or alternatively `romberg(Δx,y)`,
