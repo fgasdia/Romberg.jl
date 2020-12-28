@@ -5,7 +5,7 @@
 A simple Julia package to perform Romberg integration over discrete 1-dimensional
 data.
 
-[Romberg integration](https://en.wikipedia.org/wiki/Romberg's_method) combines trapezoidal integration with Richardson extrapolation for improved accuracy. This package is
+[Romberg integration](https://en.wikipedia.org/wiki/Romberg's_method) combines trapezoidal integration with [Richardson extrapolation](https://github.com/JuliaMath/Richardson.jl) for improved accuracy. This package is
 meant to be used for integrating discrete data sampled with equal spacing. If
 your integrand can be evaluated at arbitrary points, then other methods are probably a better
 choice, e.g. [QuadGK.jl](https://github.com/JuliaMath/QuadGK.jl). Similarly,
@@ -46,7 +46,7 @@ spacing `Δx` between points.
 
 Romberg integration works by recursively breaking the integral down into
 trapezoidal-rule evaluations using larger and larger spacings `Δx` and then
-extrapolating back towards `Δx → 0`.   This works by factorizing `length(x) - 1`,
+extrapolating back towards `Δx → 0`.   This works by [factorizing](https://github.com/JuliaMath/Primes.jl) `length(x) - 1`,
 and therefore works best when `length(x) - 1` has **many small factors**, ideally
 being a power of two.
 
